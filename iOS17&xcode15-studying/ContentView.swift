@@ -8,13 +8,21 @@
 import SwiftUI
 
 struct ContentView: View {
+  @Environment(\.colorScheme) var colorScheme
+  @State var isTapped = false
+  @State var time = Date.now
+  let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+  @State var isActive = false
+  
   var body: some View {
     ZStack {
       Image("Image 1")
         .resizable()
         .aspectRatio(contentMode: .fill)
-        .frame(height: 300)
-        .clipShape(.rect(cornerRadius: 20))
+        .frame(width: isTapped ? 393 : 360, height: isTapped ? 600 : 300)
+        .clipShape(.rect(cornerRadius: isTapped ? 0 : 20))
+        .offset(y: isTapped ? -200 : 0)
+      
       
       VStack(alignment: .center) {
         Text("modern architecture, an isometric tiny house, cute illustration, minimalist, vector art, night view")
@@ -53,17 +61,20 @@ struct ContentView: View {
         HStack {
           HStack {
             Image(systemName: "ellipsis")
+              .symbolEffect(.pulse)
             Divider()
             Image(systemName: "sparkle.magnifyingglass")
+              .symbolEffect(.scale.up, isActive: isActive)
             Divider()
             Image(systemName: "face.smiling")
+              .symbolEffect(.appear, isActive: isActive)
           }
           .padding()
           .frame(height: 44)
           .overlay(
-              UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: 0, bottomLeading: 20, bottomTrailing: 0, topTrailing: 20))
-                .strokeBorder(linearGradient)
-            )
+            UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: 0, bottomLeading: 20, bottomTrailing: 0, topTrailing: 20))
+              .strokeBorder(linearGradient)
+          )
           .offset(x: -20, y: 20)
           
           Spacer()
@@ -74,23 +85,58 @@ struct ContentView: View {
             .overlay(
               UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: 20, bottomLeading: 0, bottomTrailing: 20, topTrailing: 0))
                 .strokeBorder(linearGradient)
-                  .strokeBorder(linearGradient)
-              )
+                .strokeBorder(linearGradient)
+            )
             .offset(x:20, y: 20)
         }
       }
       .padding(20.0)
       .background(.ultraThinMaterial)
       .overlay(
-          RoundedRectangle(cornerRadius: 20)
-            .strokeBorder(linearGradient)
-        )
+        RoundedRectangle(cornerRadius: 20)
+          .strokeBorder(linearGradient)
+      )
       .cornerRadius(20.0)
+      .padding(40)
+      .offset(y: isTapped ? 220 : 80)
+      
+      HStack(spacing: 30) {
+        Image(systemName: "wand.and.rays")
+          .symbolEffect(.variableColor.iterative.reversing, options: .speed(3))
+          .frame(width: 44)
+          .opacity(isTapped ? 1 : 0)
+          .blur(radius: isTapped ? 0 : 20)
+        Image(systemName: isTapped ? "pause.fill" : "play.fill")
+          .contentTransition(.symbolEffect(.replace))
+          .onTapGesture {
+            withAnimation(.bouncy){
+              isTapped.toggle()
+            }
+          }
+        Image(systemName: "bell.and.waves.left.and.right.fill")
+          .symbolEffect(.bounce, options: .speed(3).repeat(3), value: isTapped)
+          .frame(width: 44)
+          .opacity(isTapped ? 1 : 0)
+          .blur(radius: isTapped ? 0 : 20)// Coloque antes dos gestos como onReceive
+          .onReceive(timer) { value in
+            time = value
+            isActive.toggle( )
+          }
+      }
+      .frame(width: isTapped ? 220 : 50)
+      .foregroundStyle(.primary, colorScheme == ColorScheme.dark ? .black : .white)
+      .font(.largeTitle)
       .padding(20)
-      .offset(y: 80)
+      .background(.ultraThinMaterial)
+      .cornerRadius(20)
+      .overlay(
+        RoundedRectangle(cornerRadius: 20)
+          .strokeBorder(linearGradient)
+      )
+      .offset(y: isTapped ? 40 :-44)
+      
     }
     .frame(maxWidth: 400)
-    .padding(20)
     .dynamicTypeSize(.xSmall ... .xLarge)
   }
   
